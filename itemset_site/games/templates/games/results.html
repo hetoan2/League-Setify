@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block script %}
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>
+$(document).ready(function () {
+    var img_array = [],
+        newIndex = 0,
+        index = 0,
+        bg,
+        interval = 5000;
+    {% for match in summoner.matches %}
+    img_array.push("{{ match.champ }}");
+    {% endfor %}
+    (function changeBg() {
+        index = (index + 1) % img_array.length;
+        bg = 'url(http://ddragon.leagueoflegends.com/cdn/img/champion/splash/' + img_array[index] + '_0.jpg)';
+        $('body').css({'background-image': bg, 'background-size':'cover', 'transition': '2.5s'});
+        setTimeout(changeBg, interval);
+    })();
+});
+</script>
+{% endblock %}
+
+{% block title %} LoL Items - {{ summoner.name }} {% endblock %}
+
+{% block content %}
+<h1>{{ summoner.name }}</h1>
+<div class="box">
+{% for match in summoner.matches %}
+    <br />
+    <div class="game {{ match.status }}">
+        <div class="champ"><img class="champ" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/champion/{{ match.champ }}.png"></div>
+        <div class="right">
+        <div class="build">
+            {% if match.0 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.0 }}.png"></div>
+            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% if match.1 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.1 }}.png"></div>
+            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% if match.2 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.2 }}.png"></div>
+            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% if match.3 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.3 }}.png"></div>
+            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% if match.4 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.4 }}.png"></div>
+            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% if match.5 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.5 }}.png"></div>
+            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% if match.6 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.6 }}.png"></div>
+            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            <div class="spacer"></div>
+            <div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/spell/{{ match.spell_1 }}.png"></div>
+            <div style="padding-right: 10px;" class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/spell/{{ match.spell_2 }}.png"></div>
+        </div>
+        <div class="details">{{ match.champ }}      {{ match.score }}</div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

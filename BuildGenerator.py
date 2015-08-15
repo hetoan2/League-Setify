@@ -210,7 +210,25 @@ class Summoner(object):
         data = json.load(response)
 
         try:
-            self.matches = [match_id['matchId'] for match_id in data['matches']]
+            self.matches = list()
+            for match in data['matches']:
+                stats = match['participants'][0]['stats']
+                match_data = {"id": match['matchId'],
+                              "champ": match['participants'][0]['championId'],
+                              "score": "%s/%s/%s" % (stats['kills'], stats['deaths'], stats['assists']),
+                              "spell_1": match['participants'][0]['spell1Id'],
+                              "spell_2": match['participants'][0]['spell2Id'],
+                              # for version, replace find second decimal place (replace first decimal with space,
+                              # then do find on result to get index of second decimal, strip to base version
+                              # finally adding ".1" to end of version number to get the data dragon variant.
+                              "version": match['matchVersion']
+                                         [:match['matchVersion'].replace(".", " ", 1).find(".")] + ".1"
+                }
+                item_slots = ['0', '1', '2', '3', '4', '5', '6']
+                for slot in item_slots:
+                    if stats['item'+slot] != "0":
+                        match_data[slot] = stats['item'+slot]
+                self.matches.append(match_data)
         except KeyError:
             # if there are no matches, create a blank list.
             self.matches = []
@@ -231,7 +249,7 @@ class Summoner(object):
             except IndexError:
                 # if we are out of index, just return the latest game.
                 match = self.matches[-1]
-            url = "https://na.api.pvp.net/api/lol/na/v2.2/match/" + str(match) + \
+            url = "https://na.api.pvp.net/api/lol/na/v2.2/match/" + str(match["id"]) + \
                   "?includeTimeline=true&api_key=" + api_key
 
             response = urllib.urlopen(url)
@@ -300,7 +318,7 @@ def get_summoner_id(username):
     url = "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/" + username + "?api_key=" + api_key
     response = urllib.urlopen(url)
     data = json.load(response)
-    return Summoner(data[username])
+    return Summoner(data[data.keys()[0]])
 
 
 def main():
