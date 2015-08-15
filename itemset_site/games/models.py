@@ -25,6 +25,7 @@ summoner_spell_data = json.load(urllib.urlopen("http://ddragon.leagueoflegends.c
 class Summoner(object):
     def __init__(self, summoner_object, region="na"):
         self.id = summoner_object['id']
+        print self.id
         self.name = summoner_object['name']
         self.matches = list()
         self.participant_ids = list()
@@ -40,7 +41,7 @@ class Summoner(object):
         :return:
         """
         query_params = {}
-        url = "https://na.api.pvp.net/api/lol/" + self.region + "/v2.2/matchhistory/" + str(self.id) + "?"
+        url = "https://" + self.region + ".api.pvp.net/api/lol/" + self.region + "/v2.2/matchhistory/" + str(self.id) + "?"
 
         if ranked == 1:
             query_params['rankedQueues'] = 'RANKED_SOLO_5x5'
@@ -105,7 +106,7 @@ class Summoner(object):
             except IndexError:
                 # if we are out of index, just return the latest game.
                 match = self.matches[-1]
-            url = "https://na.api.pvp.net/api/lol/" + self.region + "/v2.2/match/" + str(match["id"]) + \
+            url = "https://" + self.region + ".api.pvp.net/api/lol/" + self.region + "/v2.2/match/" + str(match["id"]) + \
                   "?includeTimeline=true&api_key=" + api_key
 
             response = urllib.urlopen(url)
@@ -165,7 +166,7 @@ def get_summoner_id(username, region="na"):
     :param region: String with region to lookup in.
     :return: Summoner object for the user.
     """
-    url = "https://na.api.pvp.net/api/lol/" + region + "/v1.4/summoner/by-name/" + username + "?api_key=" + api_key
+    url = "https://" + region + ".api.pvp.net/api/lol/" + region + "/v1.4/summoner/by-name/" + username + "?api_key=" + api_key
     response = urllib.urlopen(url.encode("UTF-8"))
     data = json.load(response)
     return Summoner(data[data.keys()[0]], region=region)
