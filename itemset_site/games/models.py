@@ -2,7 +2,6 @@ from django.db import models
 import urllib
 import json
 
-# Create your models here.
 # api_key = open("api_key.txt", "r").read().replace('\n', '')
 # print "Using api key: " + api_key
 
@@ -25,7 +24,6 @@ summoner_spell_data = json.load(urllib.urlopen("http://ddragon.leagueoflegends.c
 class Summoner(object):
     def __init__(self, summoner_object, region="na"):
         self.id = summoner_object['id']
-        print self.id
         self.name = summoner_object['name']
         self.matches = list()
         self.participant_ids = list()

@@ -2,3 +2,5 @@
 .idea/tasks.xml
 api_key.txt
 .idea/dictionaries/hetoan2.xml
+itemset_site/polls
+*.pyc

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block script %}
+{% endblock %}
+
+{% block title %} LoL Item Builder {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+<div class="col-md-4">
+    <div class="page-header">
+      <h1>Items</h1>
+      <div class="form-group">
+        <input class="form-control input-group-sm" id="searchterm" placeholder="Search the Shop"/>
+      </div>
+    </div>
+    <!-- All items, will be filled by jquery search -->
+    <div id="all_items">
+    </div>
+<script type="text/javascript">
+      $("#searchterm").keyup(function(e){
+        var q = $("#searchterm").val();
+        var regex = new RegExp(q, "i");
+        $.getJSON("http://ddragon.leagueoflegends.com/cdn/5.15.1/data/en_US/item.json", function(data) {
+          $("#all_items").empty();
+              $.each(data.data, function(item_id, item) {
+                var tags = "";
+                // consolidate tags into 1 tag string
+                for (x in item.tags) {
+                  tags += " "+item.tags[x];
+                }
+                if ((item.name.search(regex) != -1 || item.colloq.search(regex) != -1 || tags.search(regex) != -1 || item.description.search(regex) != -1) && item.gold.purchasable && item.group != "DoransShowdown") {
+                  var display = true;
+                  // if hidden from shop (or wriggles because for some reason this deleted item is still here and not hidden)
+                  if (item.hideFromAll || item_id == "3154")
+                    display = false;
+                  if (item.group == "JungleItems")
+                    display = true;
+                  // filter out all Bilgewater event items, because they are still here.
+                  if (tags.search(new RegExp("Bilgewater", "i")) != -1)
+                    display = false;
+                  if (display)
+                    $("#all_items").append("<div data-id='" + item_id + "' class='slot all_items'><img class='icon' src='http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/item/" + item_id + ".png'></div>");
+                  $("#all_items").trigger('update_overflow');
+                }
+              });
+            });
+          });
+</script>
+</div>
+<div class="col-md-1 garbage">
+    <small>Remove Item</small>
+    <div id="garbage"></div>
+</div>
+<div class="col-md-7">
+    <div class="page-header">
+        <h1>Item Set</h1>
+        <div id="generate" style="position: relative; bottom: 55px; float: right;">
+            <button type="button" class="btn btn-default" onclick="test()">
+                <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Generate Item Set
+            </button>
+        </div>
+    </div>
+    <div id="item_set">
+        <div class="panel panel-default" data-id="1">
+          <div class="panel-heading"><input id="block_1_name" class="block" placeholder="Block Name"></div>
+          <div class="panel-body">
+            <div id="block_1" class="block"></div>
+          </div>
+        </div>
+        <div class="panel panel-default" data-id="2">
+          <div class="panel-heading"><input id="block_2_name" class="block" placeholder="Block Name"></div>
+          <div class="panel-body">
+            <div id="block_2" class="block"></div>
+          </div>
+        </div>
+        <div class="panel panel-default" data-id="3">
+          <div class="panel-heading"><input id="block_3_name" class="block" placeholder="Block Name"></div>
+          <div class="panel-body">
+            <div id="block_3" class="block"></div>
+          </div>
+        </div>
+        <div class="panel panel-default" data-id="4">
+          <div class="panel-heading"><input id="block_4_name" class="block" placeholder="Block Name"></div>
+          <div class="panel-body">
+            <div id="block_4" class="block"></div>
+          </div>
+        </div>
+        <div class="panel panel-default" data-id="5">
+          <div class="panel-heading"><input id="block_5_name" class="block" placeholder="Block Name"></div>
+          <div class="panel-body">
+            <div id="block_5" class="block"></div>
+          </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    Sortable.create(all_items, {
+        group: { name: "all_items", pull: "clone", put: false },
+        sort: false,
+        dataIdAttr: 'data-id',
+        scroll: true,
+        scrollSensitivity: 500,
+        scrollSpeed: 10
+    });
+    Sortable.create(garbage, {
+        group: { name: "garbage", pull: false, put: ["item_set"] },
+        sort: false,
+
+        // when item is added to garbage, remove it immediately.
+        onAdd: function (evt) {
+            var item = evt.item;
+            item.parentNode.removeChild(item);
+        }
+    });
+    var b1 = Sortable.create(block_1, {
+        group: { name: "item_set", pull: true, put: ["all_items", "item_set"] },
+        sort: true,
+        animation: 150,
+        dataIdAttr: 'data-id'
+    });
+    var b2 = Sortable.create(block_2, {
+        group: { name: "item_set", pull: true, put: ["all_items", "item_set"] },
+        sort: true,
+        animation: 150,
+        dataIdAttr: 'data-id'
+    });
+    var b3 = Sortable.create(block_3, {
+        group: { name: "item_set", pull: true, put: ["all_items", "item_set"] },
+        sort: true,
+        animation: 150,
+        dataIdAttr: 'data-id'
+    });
+    var b4 = Sortable.create(block_4, {
+        group: { name: "item_set", pull: true, put: ["all_items", "item_set"] },
+        sort: true,
+        animation: 150,
+        dataIdAttr: 'data-id'
+    });
+    var b5 = Sortable.create(block_5, {
+        group: { name: "item_set", pull: true, put: ["all_items", "item_set"] },
+        sort: true,
+        animation: 150,
+        dataIdAttr: 'data-id'
+    });
+    var order = Sortable.create(item_set, {
+        group: "blocks",
+        sort: true,
+        animation: 150,
+        dataIdAttr: "data-id"
+    });
+
+    function test() {
+        console.log(order.toArray());
+    }
+
+    $('#all_items').bind('update_overflow', function() {
+        if($('#all_items').height() > 600) {
+            $('#all_items').css({ "overflow-y": 'scroll'});
+        } else {
+            $('#all_items').css({ "overflow-y": 'hidden'});
+        }
+    });
+</script>
+</div>
+{% endblock %}

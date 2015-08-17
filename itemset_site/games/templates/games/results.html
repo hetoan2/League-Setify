@@ -51,7 +51,7 @@ $(document).ready(function () {
             <div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/spell/{{ match.spell_1 }}.png"></div>
             <div style="padding-right: 10px;" class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/spell/{{ match.spell_2 }}.png"></div>
         </div>
-        <div class="details">{{ match.champ }}      {{ match.score }}</div>
+        <div class="details">{{ match.champ }}      {{ match.score }}</div><a href="/builder/{{ summoner.region }}/{{ match.id }}/{{ summoner.id }}/"><span class="clicky"></span></a>
         </div>
     </div>
 {% endfor %}
