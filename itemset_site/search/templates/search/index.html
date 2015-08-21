@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+
+{% block title %}League Setify - Generate Item Sets for League of Legends{% endblock %}
+
+{% block content %}
+      <div class="row">
+
+        <div class="col-lg-12 text-center v-center">
+
+          <h1>League Setify</h1>
+          <p class="lead">Generate Item Sets for League of Legends</p>
+          <br>
+            <small style="width: 300px;">Search for a player's recent ranked games to generate item sets from a particular game or for a particular champion based off of their recent games.</small>
+
+          <br><br><br>
+
+          <div class="col-lg-12">
+            <div class="input-group" style="width:600px;text-align:center;margin:0 auto;">
+              <div class="input-group-btn">
+                <!-- Button and dropdown menu -->
+                  <button type="button" class="btn btn-default dropdown-toggle" id="region" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Region<span class="caret"></span></button>
+                  <ul class="dropdown-menu" style="margin-top: -1px;">
+                    <li><a onclick="set_region('na')">NA</a></li>
+                    <li><a onclick="set_region('kr')">KR</a></li>
+                    <li><a onclick="set_region('euw')">EUW</a></li>
+                    <li><a onclick="set_region('eune')">EUNE</a></li>
+                    <li><a onclick="set_region('br')">BR</a></li>
+                    <li><a onclick="set_region('lan')">LAN</a></li>
+                    <li><a onclick="set_region('las')">LAS</a></li>
+                    <li><a onclick="set_region('oce')">OCE</a></li>
+                    <li><a onclick="set_region('ru')">RU</a></li>
+                    <li><a onclick="set_region('tr')">TR</a></li>
+                  </ul>
+
+              </div>
+            <input id="name_form" class="form-control" title="Select the appropriate region and enter the summoner name you would like to look up." placeholder="Summoner Name" type="text">
+              <span class="input-group-btn"><button id="form_button" class="btn btn-primary" type="button">GO</button></span>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- /row -->
+
+    <div class="col-md-4 col-centered" style="padding-top: 50px;">
+    <p class="text-center">Select a champion below to get only games the player has played with that champion.</p>
+      <div class="row">
+        <div class="form-group">
+          <input class="form-control input-group-sm" id="searchterm" placeholder="Search for Champions"/>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8 col-centered">
+      <div class="row">
+        <div id="all_champions">
+        </div>
+        <script type="text/javascript">
+          var selected_champion = "";
+
+          $("#searchterm").keyup(function(e){
+            var q = $("#searchterm").val();
+            var regex = new RegExp(q, "i");
+            $.getJSON("http://ddragon.leagueoflegends.com/cdn/5.15.1/data/en_US/champion.json", function(data) {
+              $("#all_champions").empty();
+                  $.each(data.data, function(champion_id, champion) {
+                    var tags = "";
+                    // consolidate tags into 1 tag string
+                    for (x in champion.tags) {
+                      tags += " "+champion.tags[x];
+                    }
+                    if (champion.name.search(regex) != -1 || tags.search(regex) != -1) {
+                      $("#all_champions").append("<div id='" + champion_id + "' class='slot all_items' onclick='toggle_select(\"" + champion_id + "\")'><img class='champ_icon img-thumbnail' src='http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/champion/" + champion_id + ".png'></div>");
+                      if (champion_id == selected_champion) {
+                        // stylize the currently selected champion
+                        $('#'+champion_id).children().addClass('selected');
+                      }
+                    }
+                  });
+                  $("#all_champions").trigger('update_overflow');
+                });
+              });
+
+          // simulate keyup to initially populate the table
+          $("#searchterm").keyup();
+        </script>
+      </div>
+    </div>
+
+    <!--
+  	  <div class="row">
+
+        <div class="col-lg-12 text-center v-center" style="font-size:39pt;">
+          <a href="#"><i class="icon-google-plus"></i></a> <a href="#"><i class="icon-facebook"></i></a>  <a href="#"><i class="icon-twitter"></i></a> <a href="#"><i class="icon-github"></i></a> <a href="#"><i class="icon-pinterest"></i></a>
+        </div>
+
+      </div>
+
+  	<br><br><br><br><br>
+    -->
+<script>
+    function toggle_select(champion_id) {
+        $('#all_champions').find("img").removeClass('selected');
+        if(selected_champion == champion_id) {
+            selected_champion = "";
+        } else {
+            selected_champion = champion_id;
+            $('#'+champion_id).children().addClass('selected');
+        }
+    }
+
+    // automatic hide/show for scroll bar for item search results
+    $('#all_champions').bind('update_overflow', function() {
+        if($('#all_champions').height() > 350) {
+            $('#all_champions').css({ "overflow-y": 'scroll'});
+        } else {
+            $('#all_champions').css({ "overflow-y": 'hidden'});
+        }
+    });
+
+    // fetch and store region to a cookie because it's annoying to set region every time
+    var region = Cookies.get("region");
+
+    // if no region cookie is set, set region to NA (not saved to cookie)
+    if(typeof region === 'undefined') {
+        region = 'na';
+    }
+    // if cookie was fetched correctly, automatically set the region
+    else {
+        set_region(region);
+    }
+
+    function set_region(r) {
+        $('#region').html(r.toUpperCase()+'<span class="caret" style="margin-left: 15px;"></span>');
+        region = r;
+        Cookies.set("region", r, { path: '/', expires: 365 });
+    }
+
+
+    $('#name_form').keypress(function(event) {
+        if (event.keyCode == 13) {
+            submit_form();
+        }
+    });
+
+    $('#form_button').click(function(event) {
+        submit_form();
+    });
+
+    function submit_form() {
+        if ($('#name_form').val() != "")
+            window.location.href = "/games/"+region+"/"+$('#name_form').val()+"/"+selected_champion;
+    }
+</script>
+
+{% endblock %}

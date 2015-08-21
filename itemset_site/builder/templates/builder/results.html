@@ -6,10 +6,76 @@
 {% block title %} LoL Item Builder {% endblock %}
 
 {% block content %}
+<!-- Tooltip -->
+<div id="tooltip" class="hidden"></div>
 <div class="container-fluid">
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document" style="margin: 100px auto;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Item Set Options</h4>
+      </div>
+      <div class="modal-body">
+        <form id="generate-itemset" action="/builder/generate/" method="POST" target="_blank"> {% csrf_token %}
+        <br />
+        <div class="container-fluid">
+        <div class="form-group">
+          <label for="inputItemSetName" class="col-sm-2 control-label">Set Name</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="inputItemSetName" name="setname" value="{{ itemset.title }}">
+            </div>
+        </div>
+        </div>
+        <div class="container-fluid">
+            <br />
+            <br />
+            <!-- Map drop-down group -->
+            <div class="col-md-6">
+            <label>Map:</label>
+            <select class="form-control" name="map" form="generate-itemset">
+              <option>All Maps</option>
+              {% if itemset.summoners_rift %}
+              <option selected="selected">Summoner's Rift</option>
+              <option>Twisted Treeline</option>
+              {% else %}
+              <option>Summoner's Rift</option>
+              <option selected="selected">Twisted Treeline</option>
+              {% endif %}
+              <option>Howling Abyss</option>
+              <option>Crystal Scar</option>
+            </select>
+            </div>
+
+            <!-- Mode drop-down group -->
+            <div class="col-md-6">
+            <label>Mode:</label>
+            <select class="form-control" name="mode" form="generate-itemset">
+              <option>All Modes</option>
+              <option selected="selected">Classic (5v5/3v3)</option>
+              <option>ARAM</option>
+              <option>Dominion</option>
+            </select>
+            </div>
+        </div>
+        <input type="hidden" name="itemset-data" id="itemset-data" value="">
+        </form><div style="padding-top: 20px;">When ready, download the item set and save it in your League of Legends installation directory under<br><br>
+          <div class="input-group input-group-sm" style="width: 100%;">
+          <input style="background: rgba(23, 35, 37, 1);v color: lightgray;" type="text" class="form-control" readonly value="\League of Legends\Config\Champions\{{ champion }}\Recommended\"></div></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="submit()">
+            <span class="glyphicon glyphicon-save-file" aria-hidden="true" style="padding-right: 15px;"></span>Download Item Set
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="col-md-4">
     <div class="page-header">
-      <h1>Items</h1>
+      <h1>Items<small style="padding-left: 25px; font-size: 35%">Drag items to move them</small></h1>
       <div class="form-group">
         <input class="form-control input-group-sm" id="searchterm" placeholder="Search the Shop"/>
       </div>
@@ -18,34 +84,47 @@
     <div id="all_items">
     </div>
 <script type="text/javascript">
-      $("#searchterm").keyup(function(e){
-        var q = $("#searchterm").val();
-        var regex = new RegExp(q, "i");
-        $.getJSON("http://ddragon.leagueoflegends.com/cdn/5.15.1/data/en_US/item.json", function(data) {
-          $("#all_items").empty();
-              $.each(data.data, function(item_id, item) {
-                var tags = "";
-                // consolidate tags into 1 tag string
-                for (x in item.tags) {
-                  tags += " "+item.tags[x];
-                }
+// I considered adding a toggle for the item tooltips, but most sites just have it on always, so I left it this way
+var show_tooltip = true;
+
+$("#searchterm").keyup(function(e) {
+    var q = $("#searchterm").val();
+    var regex = new RegExp(q, "i");
+    $.getJSON("http://ddragon.leagueoflegends.com/cdn/{{ version }}/data/en_US/item.json", function(data) {
+        $("#all_items").empty();
+        $.each(data.data, function(item_id, item) {
+            var tags = "";
+            // consolidate tags into 1 tag string
+            for (x in item.tags) {
+                tags += " " + item.tags[x];
+            }
+            try {
                 if ((item.name.search(regex) != -1 || item.colloq.search(regex) != -1 || tags.search(regex) != -1 || item.description.search(regex) != -1) && item.gold.purchasable && item.group != "DoransShowdown") {
-                  var display = true;
-                  // if hidden from shop (or wriggles because for some reason this deleted item is still here and not hidden)
-                  if (item.hideFromAll || item_id == "3154")
-                    display = false;
-                  if (item.group == "JungleItems")
-                    display = true;
-                  // filter out all Bilgewater event items, because they are still here.
-                  if (tags.search(new RegExp("Bilgewater", "i")) != -1)
-                    display = false;
-                  if (display)
-                    $("#all_items").append("<div data-id='" + item_id + "' class='slot all_items'><img class='icon' src='http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/item/" + item_id + ".png'></div>");
-                  $("#all_items").trigger('update_overflow');
+                    var display = true;
+                    // if hidden from shop (or wriggles because for some reason this deleted item is still here and not hidden)
+                    if (item.hideFromAll || item_id == "3154")
+                        display = false;
+                    if (item.group == "JungleItems")
+                        display = true;
+                    // filter out all Bilgewater event items, because they are still here.
+                    if (tags.search(new RegExp("Bilgewater", "i")) != -1)
+                        display = false;
+                    if (display)
+                        $("#all_items").append("<div data-id='" + item_id + "' class='slot all_items'><img class='icon' src='http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/item/" + item_id + ".png'></div>");
                 }
-              });
-            });
-          });
+            } catch (err) {
+                // if function throws error (from null items) still update the layout
+                $("#all_items").trigger('update_overflow');
+            }
+        });
+        // update the overflow to show scroll bar if appropriate
+        $("#all_items").trigger('update_overflow');
+
+    });
+});
+
+// simulate keyup to initially populate the table
+$("#searchterm").keyup();
 </script>
 </div>
 <div class="col-md-1 garbage">
@@ -53,27 +132,38 @@
     <div id="garbage"></div>
 </div>
 <div class="col-md-7">
-    <div class="page-header">
-        <h1>Item Set</h1>
-        <div id="generate" style="position: relative; bottom: 55px; float: right;">
-            <button type="button" class="btn btn-default" onclick="test()">
-                <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Generate Item Set
-            </button>
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1>Item Set</h1>
+            <small style="padding-left: 25px; position: absolute; top: 46px; left: 160px; color: grey; width: 200px;" title="Example: 3 health potions next to each other will appear in the same slot, with a stack counter of 3.">Consecutive items of same type will stack</small>
+            <div id="generate" style="position: relative; bottom: 55px; float: right;">
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">
+                    <span class="glyphicon glyphicon-ok" aria-hidden="true" style="padding-right: 10px;"></span>Generate Item Set
+                </button>
+            </div>
         </div>
     </div>
-    <div id="item_set">
+    <div id="item_set" style="position: relative; top: -45px;">
         {% for block in itemset.blocks %}
-        <div class="panel panel-default" data-id="{{ forloop.counter }}">
-          <div class="panel-heading"><input id="block_{{ forloop.counter }}_name" class="block" placeholder="Block Name" value="{{ block.type }}"></div>
+        <div id="panel_{{ forloop.counter }}" class="panel panel-default" data-id="{{ forloop.counter }}">
+          <div class="panel-heading">
+              <input id="block_{{ forloop.counter }}_name" class="block" placeholder="Block Name" value="{{ block.type }}">
+              <button type="button" class="close" aria-label="Close" onclick="remove_block({{ forloop.counter }})"><span aria-hidden="true">×</span></button>
+          </div>
           <div class="panel-body">
             <div id="block_{{ forloop.counter }}" class="block">
                 {% for item in block.items %}
-                    <div data-id="{{ item.id }}" class="slot all_items"><img class='icon' src='http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/item/{{ item.id }}.png'></div>
+                    <div data-id="{{ item.id }}" class="slot all_items"><img class='icon' onerror="$(this).parent().remove()" src='http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/item/{{ item.id }}.png'></div>
                 {% endfor %}
             </div>
           </div>
         </div>
         {% endfor %}
+    </div>
+    <div class="add_new">
+        <button type="button" class="btn btn-default" aria-label="Add New Block" onclick="add_block()" style="width: 100%;border-radius: 0px;background-color: rgba(23, 35, 37, 1) !important;">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        </button>
     </div>
 </div>
 <script type="text/javascript">
@@ -83,7 +173,20 @@
         dataIdAttr: 'data-id',
         scroll: true,
         scrollSensitivity: 500,
-        scrollSpeed: 10
+        scrollSpeed: 10,
+
+        onStart: function() {
+            // do not show tooltip when user begins to drag an item.
+            $("#tooltip").addClass('hidden');
+            $("#tooltip").removeClass('shown');
+        },
+
+        onRemove: function(evt) {
+            // remove the binding on the dragged object
+            $(evt.item).unbind('mouseenter mouseleave');
+            // refresh shop area to re-add binds for tooltip
+            $("#all_items").trigger('update_overflow');
+        }
     });
     Sortable.create(garbage, {
         group: { name: "garbage", pull: false, put: ["item_set"] },
@@ -95,6 +198,9 @@
             item.parentNode.removeChild(item);
         }
     });
+
+    var blocks = [];
+
     {% for block in itemset.blocks %}
     var b{{ forloop.counter }} = Sortable.create(block_{{ forloop.counter }}, {
         group: { name: "item_set", pull: true, put: ["all_items", "item_set"] },
@@ -102,6 +208,7 @@
         animation: 150,
         dataIdAttr: 'data-id'
     });
+    blocks.push(b{{ forloop.counter }});
     {% endfor %}
     var order = Sortable.create(item_set, {
         group: "blocks",
@@ -110,17 +217,112 @@
         dataIdAttr: "data-id"
     });
 
-    function test() {
-        console.log(order.toArray());
+    function addslashes( str ) {
+        return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
     }
 
-    $('#all_items').bind('update_overflow', function() {
-        if($('#all_items').height() > 600) {
-            $('#all_items').css({ "overflow-y": 'scroll'});
-        } else {
-            $('#all_items').css({ "overflow-y": 'hidden'});
+    function submit() {
+        console.log(order.toArray());
+        /*
+        $('#item_set').children().each(function(i) {
+            console.log($(this).context.childNodes[3]);
+        });
+        */
+        var blockorder = order.toArray();
+        var set_data = "[";
+        for (x in blockorder) {
+            console.log($('#block_'+blockorder[x]+'_name').val()+": "+blocks[parseInt(blockorder[x])-1].toArray());
+            set_data += "['" + addslashes($('#block_'+blockorder[x]+'_name').val()) +"',"+blocks[parseInt(blockorder[x])-1].toArray().toString() + "], ";
         }
+        set_data += "]";
+        $('#itemset-data').val(set_data);
+        $('#generate-itemset').submit();
+    }
+
+    function add_block() {
+        var new_id = String(blocks.length+1);
+
+        var newblock = '<div id="panel_' + new_id +'" class="panel panel-default" data-id="' + new_id + '"><div class="panel-heading">' +
+                       '<input id="block_' + new_id + '_name" class="block" placeholder="Block Name">' +
+                       '<button type="button" class="close" aria-label="Close" onclick="remove_block(' + new_id + ')"><span aria-hidden="true">×</span></button></div>' +
+                       '<div class="panel-body"><div id="block_' + new_id + '" class="block"></div></div></div>';
+
+        $('#item_set').append(newblock);
+
+        var el = document.getElementById("block_" + new_id);
+        var new_block = Sortable.create(el, {
+                group: { name: "item_set", pull: true, put:["all_items", "item_set"] },
+                sort: true,
+                animation: 150,
+                dataIdAttr: "data-id"
+        });
+
+        blocks.push(new_block);
+    }
+
+    function remove_block(i) {
+        $('#panel_'+ String(i)).remove();
+    }
+
+    // automatic hide/show for scroll bar for item search results
+    $('#all_items').bind('update_overflow', function() {
+        if ($('#all_items').height() > 600) {
+            $('#all_items').css({
+                "overflow-y": 'scroll'
+            });
+        } else {
+            $('#all_items').css({
+                "overflow-y": 'hidden'
+            });
+        }
+
+        // while we are updating the area, add hooks for tooltip display
+        $("#all_items").children().each(function(i) {
+            $(this).hover(
+                function() {
+                    if (show_tooltip) {
+                        $("#tooltip").addClass('shown');
+                        $("#tooltip").removeClass('hidden');
+                        var id = $(this).attr("data-id");
+
+                        $.getJSON("http://ddragon.leagueoflegends.com/cdn/{{ version }}/data/en_US/item.json", function(data) {
+                            var inner_html = "<div class='itemname'>"+data.data[id].name+"</div><div class='cost'>"+data.data[id].gold.total
+                            inner_html += "<div class='ui_icon' style='display: inline-block; position: absolute; bottom: 4px; right: -15px;'><img src='http://ddragon.leagueoflegends.com/cdn/5.2.1/img/ui/gold.png'></div></div>"
+                            inner_html += data.data[id].description;
+                            $("#tooltip").html(inner_html);
+                            });
+                    }
+                },
+                function() {
+                    $("#tooltip").addClass('hidden');
+                    $("#tooltip").removeClass('shown');
+                }
+            );
+        });
     });
+
+    var tooltip = document.getElementById('tooltip');
+
+    window.onmousemove = function (e) {
+        var x = e.clientX,
+            y = e.clientY,
+            sy = $(window).height();
+
+        tooltip.style.top = (y + 20) + 'px';
+        tooltip.style.left = (x + 20) + 'px';
+
+        // if tooltip will be outside the window
+        if (sy - y < $("#tooltip").height()) {
+            tooltip.style.top = (y - $("#tooltip").height()) + 'px';
+            tooltip.style.left = (x + 20) + 'px';
+        }
+    };
+
+    // update the header to show we are at the builder page
+    $("#header_build").addClass("active");
+
+    // trigger the item view redraw initially to set everything proper
+    $('#all_items').trigger('update_overflow');
 </script>
 </div>
 {% endblock %}

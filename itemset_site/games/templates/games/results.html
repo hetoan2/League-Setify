@@ -1,15 +1,25 @@
 {% extends "base.html" %}
 
 {% block script %}
-<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script>
+// preload all the images in the background so that our transitions look nice (if css is supported)
+$.preloadImage = function(arg) {
+    $("<img />").attr("src", arg);
+}
+
+// $('body').css({
+
+{% for match in summoner.matches reversed %}
+$.preloadImage("http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{{ match.champ }}_0.jpg");
+{% endfor %}
+
 $(document).ready(function () {
     var img_array = [],
         newIndex = 0,
         index = 0,
         bg,
         interval = 5000;
-    {% for match in summoner.matches %}
+    {% for match in summoner.matches reversed %}
     img_array.push("{{ match.champ }}");
     {% endfor %}
     (function changeBg() {
@@ -25,33 +35,51 @@ $(document).ready(function () {
 {% block title %} LoL Items - {{ summoner.name }} {% endblock %}
 
 {% block content %}
+<div class="col-md-8 col-centered box">
+<!-- Iterate through matches in reverse, since they are returned from id low to high (more recent at end) -->
 <h1>{{ summoner.name }}</h1>
-<div class="box">
-{% for match in summoner.matches %}
+{% if singlechamp %}
+<div class="generate" style="float: right; position: absolute; top: 5px; right: 75px;"><a class="btn btn-default navbar-btn" href="/builder/{{ summoner.region }}/{{ summoner.name }}/{{ summoner.matches.0.champ }}"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> Generate item set from all games</a></div>
+{% endif %}
+<small style="display: inherit; margin-bottom: -15px; color: #999;">Click a game to Setify</small>
+{% for match in summoner.matches reversed %}
     <br />
     <div class="game {{ match.status }}">
-        <div class="champ"><img class="champ" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/champion/{{ match.champ }}.png"></div>
+        <div class="champ">
+            <img class="champ" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/champion/{{ match.champ }}.png">
+            <div class="patch" style="font-size: 70%; position: absolute; left: 70px; bottom: 0px;">{{ match.version }}</div>
+        </div>
         <div class="right">
         <div class="build">
+            {% load staticfiles %}
             {% if match.0 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.0 }}.png"></div>
-            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% else %}<div class="slot"><img class="icon" src='{% static "img/empty.gif" %}'></div>{% endif %}
             {% if match.1 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.1 }}.png"></div>
-            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% else %}<div class="slot"><img class="icon" src='{% static "img/empty.gif" %}'></div>{% endif %}
             {% if match.2 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.2 }}.png"></div>
-            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% else %}<div class="slot"><img class="icon" src='{% static "img/empty.gif" %}'></div>{% endif %}
             {% if match.3 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.3 }}.png"></div>
-            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% else %}<div class="slot"><img class="icon" src='{% static "img/empty.gif" %}'></div>{% endif %}
             {% if match.4 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.4 }}.png"></div>
-            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% else %}<div class="slot"><img class="icon" src='{% static "img/empty.gif" %}'></div>{% endif %}
             {% if match.5 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.5 }}.png"></div>
-            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% else %}<div class="slot"><img class="icon" src='{% static "img/empty.gif" %}'></div>{% endif %}
             {% if match.6 %}<div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/item/{{ match.6 }}.png"></div>
-            {% else %}<div class="slot"><img class="icon" src=""></div>{% endif %}
+            {% else %}<div class="slot"><img class="icon" src='{% static "img/empty.gif" %}'></div>{% endif %}
             <div class="spacer"></div>
             <div class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/spell/{{ match.spell_1 }}.png"></div>
             <div style="padding-right: 10px;" class="slot"><img class="icon" src="http://ddragon.leagueoflegends.com/cdn/{{ match.version }}/img/spell/{{ match.spell_2 }}.png"></div>
         </div>
-        <div class="details">{{ match.champ }}      {{ match.score }}</div><a href="/builder/{{ summoner.region }}/{{ match.id }}/{{ summoner.id }}/"><span class="clicky"></span></a>
+        <div class="details" style="display: inline-flex;">
+            <div class="score">
+                <div class="ui_icon">
+                    <img src="http://ddragon.leagueoflegends.com/cdn/5.2.1/img/ui/score.png"></div>
+                <div style="padding-left: 20px;">{{ match.score }}</div>
+                <div class="ui_icon" style="left: 255px; bottom: 18px;">
+                    <img src="http://ddragon.leagueoflegends.com/cdn/5.2.1/img/ui/gold.png">
+                </div>
+                <div class="gold">{{ match.gold }}</div>
+            </div><div class="date">{{ match.date }}</div></div><a href="/builder/{{ summoner.region }}/{{ match.id }}/{{ summoner.id }}/"><span class="clicky"></span></a>
         </div>
     </div>
 {% endfor %}

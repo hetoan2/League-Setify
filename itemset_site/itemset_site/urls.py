@@ -15,9 +15,14 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.views.generic import TemplateView
+from django.http import HttpResponseRedirect
 
 urlpatterns = [
+    # url(r'^$', lambda r:HttpResponseRedirect('games/')),
+    url(r'^', include('search.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^games/', include('games.urls', namespace='games')),
     url(r'^builder/', include('builder.urls', namespace='builder')),
+    url(r'^about/', TemplateView.as_view(template_name='search/about.html'), name='about'),
 ]

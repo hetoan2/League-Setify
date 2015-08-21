@@ -1,5 +1,6 @@
 from django.db import models
 import urllib
+import datetime
 import json
 
 # api_key = open("api_key.txt", "r").read().replace('\n', '')
@@ -7,9 +8,10 @@ import json
 
 api_key = ""
 
-dd_version = json.load(urllib.urlopen("https://global.api.pvp.net/api/lol/static-data/na/v1.2/versions"
-                                      "?api_key=" + api_key))[0]
+versions = json.load(urllib.urlopen("https://global.api.pvp.net/api/lol/static-data/na/v1.2/versions"
+                                    "?api_key=" + api_key))
 
+dd_version = versions[0]
 # print "Using DataDragon version: " + dd_version
 
 champion_data = json.load(urllib.urlopen("http://ddragon.leagueoflegends.com"
@@ -61,8 +63,11 @@ class Summoner(object):
         url += urllib.urlencode(query_params)
 
         # get the response from the server
-        response = urllib.urlopen(url)
-        data = json.load(response)
+        try:
+            response = urllib.urlopen(url)
+            data = json.load(response)
+        except ValueError:
+            return False
 
         try:
             self.matches = list()
@@ -71,6 +76,7 @@ class Summoner(object):
                 match_data = {"id": match['matchId'],
                               "champ": get_champion_name(match['participants'][0]['championId']),
                               "score": "%s/%s/%s" % (stats['kills'], stats['deaths'], stats['assists']),
+                              "gold": '{:.1f}'.format(float(stats['goldEarned']) / 1000) + "k",
                               "spell_1": get_summoner_spell_image(match['participants'][0]['spell1Id']),
                               "spell_2": get_summoner_spell_image(match['participants'][0]['spell2Id']),
                               # for version, replace find second decimal place (replace first decimal with space,
@@ -78,8 +84,19 @@ class Summoner(object):
                               # finally adding ".1" to end of version number to get the data dragon variant.
                               "version": match['matchVersion']
                                          [:match['matchVersion'].replace(".", " ", 1).find(".")] + ".1",
-                              "status": stats['winner']
+                              "status": stats['winner'],
+                              "date": datetime.datetime.fromtimestamp(match['matchCreation'] // 1000).strftime("%x"),
                               }
+
+                # validate if version is in version list (some patches don't have .1 as their base version)
+                while match_data["version"] not in versions:
+                    # if it isn't, strip the end off and increment
+                    oldversion = int(match_data["version"][-1:])
+                    match_data["version"] = match_data["version"][:-1]+str(oldversion+1)
+                    # let's not make our server stuck with some anomaly in the data... only iterate this 5 times maximum
+                    if oldversion > 5:
+                        break
+
                 item_slots = ['0', '1', '2', '3', '4', '5', '6']
                 for slot in item_slots:
                     if stats['item' + slot] != 0:
@@ -90,6 +107,8 @@ class Summoner(object):
             self.matches = []
 
         self.participant_ids = []
+
+        return True
 
     def get_timeline_data(self, match_index):
         """
@@ -115,32 +134,6 @@ class Summoner(object):
                     participant_id = participant['participantId']
             return data['timeline']['frames'], participant_id
 
-            # def get_build_from_match_index(self, match_index):
-            # """
-            #     Get the item set for the match specified by it's index in the list.
-            #     :param match_index: Int index of the match in the match list.
-            #     :return: String with Item Set Json
-            #     """
-            #     timeline_data, participant_id = self.get_timeline_data(match_index)
-            #     # generate a new item set from the events in the match
-            #     item_set = ItemSet()
-            #     for frame in timeline_data:
-            #         try:
-            #             events = frame['events']
-            #             for event in events:
-            #                 if event['eventType'] == 'ITEM_PURCHASED' and event['participantId'] == participant_id:
-            #                     # print event
-            #                     item_set.add_item(correct_item_id(event['itemId']), event['timestamp'])
-            #                 if event['eventType'] == 'ITEM_UNDO' and event['participantId'] == participant_id:
-            #                     # print event
-            #                     # if the user undid a sell, then we should not undo the purchase
-            #                     if event['itemBefore'] != 0:
-            #                         item_set.undo_purchase()
-            #             item_set.add_auto_block()
-            #         except KeyError:
-            #             pass
-            #     return json.dumps(item_set.generate())
-
 
 def get_champion_id(champion_name):
     """
@@ -165,8 +158,11 @@ def get_summoner_id(username, region="na"):
     :return: Summoner object for the user.
     """
     url = "https://" + region + ".api.pvp.net/api/lol/" + region + "/v1.4/summoner/by-name/" + username + "?api_key=" + api_key
-    response = urllib.urlopen(url.encode("UTF-8"))
-    data = json.load(response)
+    try:
+        response = urllib.urlopen(url.encode("UTF-8"))
+        data = json.load(response)
+    except ValueError:
+        return False
     return Summoner(data[data.keys()[0]], region=region)
 
 
