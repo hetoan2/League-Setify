@@ -1,19 +1,33 @@
-from django.db import models
+# from django.db import models
+from django.core.cache import cache
+from time import sleep
 import urllib
 import datetime
 import json
 
-# api_key = open("api_key.txt", "r").read().replace('\n', '')
-# print "Using api key: " + api_key
-
 api_key = ""
 
-versions = json.load(urllib.urlopen("https://global.api.pvp.net/api/lol/static-data/na/v1.2/versions"
-                                    "?api_key=" + api_key))
+dd_version = cache.get('version')
 
-dd_version = versions[0]
-# print "Using DataDragon version: " + dd_version
+# if the version number is not in the cache (expired), fetch data again
+if dd_version is None:
+    valid_lookup = False
+    while not valid_lookup:
+        try:
+            versions = json.load(urllib.urlopen("https://global.api.pvp.net/api/lol/static-data/na/v1.2/versions"
+                                                "?api_key=" + api_key))
 
+            dd_version = versions[0]
+
+            # cache the versions every 8 hours.
+            cache.set(dd_version, 'version', 60*60*8)
+
+            valid_lookup = True
+        except:
+            valid_lookup = False
+
+
+# these 3 calls are to the static data CDN, so we don't have to worry about rate limiting
 champion_data = json.load(urllib.urlopen("http://ddragon.leagueoflegends.com"
                                          "/cdn/" + dd_version + "/data/en_US/champion.json"))
 
@@ -63,11 +77,7 @@ class Summoner(object):
         url += urllib.urlencode(query_params)
 
         # get the response from the server
-        try:
-            response = urllib.urlopen(url)
-            data = json.load(response)
-        except ValueError:
-            return False
+        data = fetch_json_from_url(url)
 
         try:
             self.matches = list()
@@ -126,8 +136,7 @@ class Summoner(object):
             url = "https://" + self.region + ".api.pvp.net/api/lol/" + self.region + "/v2.2/match/" + str(match["id"]) + \
                   "?includeTimeline=true&api_key=" + api_key
 
-            response = urllib.urlopen(url)
-            data = json.load(response)
+            data = fetch_json_from_url(url)
             participant_id = -1
             for participant in data['participantIdentities']:
                 if participant['player']['summonerId'] == self.id:
@@ -158,11 +167,7 @@ def get_summoner_id(username, region="na"):
     :return: Summoner object for the user.
     """
     url = "https://" + region + ".api.pvp.net/api/lol/" + region + "/v1.4/summoner/by-name/" + username + "?api_key=" + api_key
-    try:
-        response = urllib.urlopen(url.encode("UTF-8"))
-        data = json.load(response)
-    except ValueError:
-        return False
+    data = fetch_json_from_url(url)
     return Summoner(data[data.keys()[0]], region=region)
 
 
@@ -173,3 +178,57 @@ def get_summoner_spell_image(spell_id):
             return spell
             # return summoner_spell_data['data'][spell]['image']['full']
     return "SummonerFlash"
+
+
+request_count = 0
+last_request = None
+
+
+def fetch_json_from_url(url, tries=0):
+    """
+    Load JSON from URL, if there is an error, try again. Rate limiting is done in here.
+    :param url: URL to open
+    :return: JSON object
+    """
+    global request_count, last_request
+
+    # we are not getting stuck here. only try 5 times.
+    if tries > 5:
+        raise LookupError
+
+    try:
+        if last_request is None:
+            last_request = datetime.datetime.now()
+        # if it has been less than 10 seconds
+        if (datetime.datetime.now() - last_request).total_seconds() < 10:
+            if request_count > 10:
+                # if we have made more than 10 calls in past 10 seconds, wait and try again
+                sleep(0.5)
+                return fetch_json_from_url(url, tries=tries+1)
+        else:
+            # reset our counters
+            request_count = 0
+            last_request = datetime.datetime.now()
+
+        response = urllib.urlopen(url.encode("UTF-8"))
+        data = json.load(response)
+
+        try:
+            # search for a rate limit error
+            if data['status']['status_code'] == 429:
+                # if found, we should read the retry-after header and sleep, provided we aren't hanging for 20 seconds.
+                sleep_time = int(response.info()['Retry-After'])
+                if sleep_time < 10:
+                    sleep(sleep_time)
+                    return fetch_json_from_url(url, tries=tries+1)
+                else:
+                    raise LookupError
+        except KeyError:
+            pass
+
+        # increment a request when valid data was received
+        request_count += 1
+        return data
+    # value error means we did not get valid JSON back, so retry.
+    except ValueError:
+        return fetch_json_from_url(url, tries=tries+1)

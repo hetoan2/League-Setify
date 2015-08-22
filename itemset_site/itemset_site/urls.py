@@ -14,14 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
 from django.conf.urls import include, url
-from django.contrib import admin
 from django.views.generic import TemplateView
-from django.http import HttpResponseRedirect
+
+handler404 = 'itemset_site.views.error404'
 
 urlpatterns = [
-    # url(r'^$', lambda r:HttpResponseRedirect('games/')),
     url(r'^', include('search.urls')),
-    url(r'^admin/', include(admin.site.urls)),
     url(r'^games/', include('games.urls', namespace='games')),
     url(r'^builder/', include('builder.urls', namespace='builder')),
     url(r'^about/', TemplateView.as_view(template_name='search/about.html'), name='about'),

@@ -94,7 +94,7 @@ div.garbage {
 
 div#all_items {
     padding-left: 5px;
-    max-height: 650px;
+    max-height: 500px;
     overflow-x: hidden;
 }
 

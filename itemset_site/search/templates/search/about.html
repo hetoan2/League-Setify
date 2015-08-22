@@ -1,9 +1,29 @@
 {% extends "base.html" %}
 
 
-{% block title %}League Setify - Generate Item Sets for League of Legends{% endblock %}
+{% block title %}About{% endblock %}
 
 {% block content %}
+<div class="col-md-8 col-centered" style="
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    padding-top: 5px;
+">
+  <h1> About </h1>
+  <br><p>Leage Setify is a web application created to help summoners quicky build item sets for use in the game <a href="http://leagueoflegends.com/">League of Legends</a> by Riot Games.</p>
+<p>
+This project was created for the Riot Games API Challenge 2.0 by Tom Fuller, although you can find me on the NA server under the name <a href="/games/na/musouka/" title="Please don't judge my ranked games D:">musouka</a>, and anywhere else you might know me as <a href="http://hetoan2.com">hetoan2</a>.
+</p><p>
+I do hope that this project can continue with input from the community to make it better in the future. So if you find any bugs, do not hesitate to create an issue on this <a href="https://github.com/hetoan2/League-Setify/issues">GitHub page</a>.</p>
+
+<br><p>
+  Yes, I know League of Legends has an Item Set feature inside the client. The point of this application is not to just replace that feature with something identical. In the end, I did end up making something that could be used identically; however this is not the intention of the appliction.
+</p>
+<p>
+  The goal of the appliation was to allow users to be able to generate item sets based off of a game they had or based off of a game you might have just witnessed on a stream. Now everyone has the ability to instantly generate an item set for the way Imaqtpie <a href="/games/na/santana%20claus/Fiora/">(santana claus)</a> is building the new Fiora.
+<p></p><p>
+I tried to make the generated item sets in a way that I would want them myself, with items shown in the order they were purchased, along with back timers put into the headers to let you know how "on track" you are. I'm sure there are other ways to format them, and I may consider changing the format or adding alternate formats in the future. I hope this project doesn't end here, and I fully plan on working on this as one of my side-projects in the future. </p></p>
+  </div>
 <script>
     $('#header_about').addClass('active');
 </script>

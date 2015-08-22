@@ -23,25 +23,29 @@ $(document).ready(function () {
     img_array.push("{{ match.champ }}");
     {% endfor %}
     (function changeBg() {
-        index = (index + 1) % img_array.length;
-        bg = 'url(http://ddragon.leagueoflegends.com/cdn/img/champion/splash/' + img_array[index] + '_0.jpg)';
-        $('body').css({'background-image': bg, 'background-size':'cover', 'transition': '2.5s'});
-        setTimeout(changeBg, interval);
+        if( img_array.length > 0) {
+            index = (index + 1) % img_array.length;
+            bg = 'url(http://ddragon.leagueoflegends.com/cdn/img/champion/splash/' + img_array[index] + '_0.jpg)';
+            $('body').css({'background-image': bg, 'background-size':'cover', 'transition': '2.5s'});
+            setTimeout(changeBg, interval);
+        }
     })();
 });
 </script>
 {% endblock %}
 
-{% block title %} LoL Items - {{ summoner.name }} {% endblock %}
+{% block title %} {{ summoner.name }} {% endblock %}
 
 {% block content %}
 <div class="col-md-8 col-centered box">
 <!-- Iterate through matches in reverse, since they are returned from id low to high (more recent at end) -->
-<h1>{{ summoner.name }}</h1>
-{% if singlechamp %}
+<h1>{{ summoner.name }}{% if not summoner.matches %} has no games on this champion{% endif %}</h1>
+{% if singlechamp and summoner.matches %}
 <div class="generate" style="float: right; position: absolute; top: 5px; right: 75px;"><a class="btn btn-default navbar-btn" href="/builder/{{ summoner.region }}/{{ summoner.name }}/{{ summoner.matches.0.champ }}"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> Generate item set from all games</a></div>
 {% endif %}
+{% if summoner.matches %}
 <small style="display: inherit; margin-bottom: -15px; color: #999;">Click a game to Setify</small>
+{% endif %}
 {% for match in summoner.matches reversed %}
     <br />
     <div class="game {{ match.status }}">

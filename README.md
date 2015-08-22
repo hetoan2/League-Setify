@@ -27,7 +27,8 @@ It may be compatible with other versions, but this has not been tested.
 
 Note: to run this code on your own server you must include your API key in the following files 
 - \itemset_site\builder\models.py 
-- \itemset_site\games\modes.py.
+- \itemset_site\games\modes.py
+- \itemset_site\search\modes.py
 
 Just put your key in between the quotes on the line 
 ```api_key = ""```

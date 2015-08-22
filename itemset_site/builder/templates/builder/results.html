@@ -3,11 +3,18 @@
 {% block script %}
 {% endblock %}
 
-{% block title %} LoL Item Builder {% endblock %}
+{% block title %} Item Set Builder {% endblock %}
 
 {% block content %}
 <!-- Tooltip -->
 <div id="tooltip" class="hidden"></div>
+{% if champion != "{championKey}" %}
+<!-- Champion Header -->
+<div class="container-fluid" style="margin-bottom: -20px;">
+    <img class="champ" src="http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/champion/{{ champion }}.png">
+    <h1 style="display: inline; padding-top: -32px; position: absolute; top: 105px; margin-left: 20px;">{{ champion }}</h1>
+</div>
+{% endif %}
 <div class="container-fluid">
 <!-- Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -266,7 +273,7 @@ $("#searchterm").keyup();
 
     // automatic hide/show for scroll bar for item search results
     $('#all_items').bind('update_overflow', function() {
-        if ($('#all_items').height() > 600) {
+        if ($('#all_items').height() > 400) {
             $('#all_items').css({
                 "overflow-y": 'scroll'
             });

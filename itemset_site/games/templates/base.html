@@ -6,6 +6,7 @@
     <link rel="stylesheet" href='{% static "css/style.css" %}' />
     <script src='{% static "js/Sortable.js" %}'></script>
     <script src='{% static "js/js.cookie.js" %}'></script>
+    <link rel="shortcut icon" type="image/png" href='{% static "favicon.ico" %}'/>
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href='https://bootswatch.com/darkly/bootstrap.min.css'/>
     <!-- Latest compiled and minified JavaScript -->
@@ -16,7 +17,7 @@
 </head>
 <body>
 <div id="fullPage">
-
+     <!-- Generated at {% now "jS F Y H:i" %} -->
      <div id="main_container" class="container" style="padding-top: 15px;">
         <nav class="navbar navbar-default">
           <div class="container-fluid">
@@ -37,7 +38,7 @@
                 <li id="header_build"><a href="/builder">Item Set Builder</a></li>
               </ul>
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Source</a></li>
+                <li><a href="https://github.com/hetoan2/League-Setify">Source</a></li>
                 <li id="header_about"><a href="/about">About</a></li>
               </ul>
             </div><!-- /.navbar-collapse -->

@@ -25,7 +25,7 @@ SECRET_KEY = 'k%5=we)22(_yhc+c_awc#5=3+lmbku1k6r40$hweg^2dqd(4v$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -106,5 +106,5 @@ STATIC_ROOT = ''
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
-    ('', 'D:/Development/python/LoL-Item-Set-Builder/itemset_site/static')
+    ('', 'X:/path/to/project/itemset_site/static')
 )

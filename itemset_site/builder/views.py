@@ -1,46 +1,44 @@
 from django.shortcuts import render
-from django.http import Http404, HttpRequest, HttpResponse
-from .models import dd_version, get_build_from_match_id, ItemSet, Block, Summoner, get_summoner_id
-
+from django.http import HttpResponse
+from django.views.decorators.cache import cache_page
+from .models import dd_version, get_build_from_match_id, ItemSet, Block, get_summoner_id
 import ast
 import json
-import urllib
 
 
+# cache the main builder page daily (version refresh daily)
+@cache_page(60 * 60 * 24)
 def index(request):
-    # latest_question_list = Question.objects.order_by('-pub_date')[:5]
     itemset = ItemSet(include_consumables=True)
     context = {'itemset': itemset, 'version': dd_version, 'champion': '{championKey}'}
     return render(request, 'builder/results.html', context)
 
 
+# cache results from a certain game for 8 hours (hopefully user is done with it by then)
+@cache_page(60 * 60 * 8)
 def game_builder(request, region, game_id, user_id):
-    itemset = get_build_from_match_id(region, game_id, user_id)
-    if itemset is None:
-        return render(request, 'builder/error.html')
-    context = {'itemset': itemset, 'version': dd_version, 'champion': itemset.champion}
-    return render(request, 'builder/results.html', context)
-
-
-def champ_builder(request, region, username, champion):
-    summoner = get_summoner_id(username, region=region)
-
-    # if summoner does not exist
-    if not summoner:
-        return render(request, 'games/error.html')
-    # if there is a problem loading the matches, show this error
-    if not summoner.get_matches(champion_name=champion):
-        return render(request, 'games/error.html')
-
-    # get item set from matches
-    itemset = summoner.get_build_from_matches()
-    itemset.title = username+"'s "+champion
-    if itemset is None:
-        return render(request, 'builder/error.html')
-    context = {'itemset': itemset, 'version': dd_version, 'champion': champion}
-    if summoner.get_matches(champion_name=champion):
+    try:
+        itemset = get_build_from_match_id(region, game_id, user_id)
+        context = {'itemset': itemset, 'version': dd_version, 'champion': itemset.champion}
         return render(request, 'builder/results.html', context)
-    else:
+    except LookupError:
+        return render(request, 'builder/error.html')
+
+
+# cache results for a certain player's champion every 15 minutes (minimum game length)
+@cache_page(60 * 15)
+def champ_builder(request, region, username, champion):
+    try:
+        summoner = get_summoner_id(username, region=region)
+        summoner.get_matches(champion_name=champion)
+
+        # get item set from matches
+        itemset = summoner.get_build_from_matches()
+        itemset.title = username+"'s "+champion
+
+        context = {'itemset': itemset, 'version': dd_version, 'champion': champion}
+        return render(request, 'builder/results.html', context)
+    except LookupError:
         return render(request, 'builder/error.html')
 
 
