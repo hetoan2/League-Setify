@@ -2,7 +2,7 @@
 A League of Legends item set builder. Generate item sets from specific games or certain user's build-style for a specified champion.
 
 ### Live Url
-I will put the live url here
+[http://leaguesetify.com/](http://leaguesetify.com/)
 
 ### About
 Leage Setify is a web application created to help summoners quicky build item sets for use in the game [League of Legends](http://na.leagueoflegends.com/).
