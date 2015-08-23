@@ -117,12 +117,12 @@ class ItemSet(object):
 
         self.auto_block.add_item(item_id)
 
-    def undo_purchase(self):
+    def undo_purchase(self, before_item):
         """
-        Reset the automatically generated block if purchase was undone.
+        Remove the item that was purchased.
         :return:
         """
-        self.auto_block = Block()
+        self.auto_block.remove_item(before_item)
 
     def add_auto_block(self):
         """
@@ -209,10 +209,12 @@ class Block(object):
         """
         for item in self.items:
             if item["id"] == str(item_id):
+                print "removed 1 "+str(item_id)
                 if item["count"] == 1:
                     self.items.remove(item)
                 else:
                     item["count"] -= 1
+                return
 
     def is_empty(self):
         """
@@ -598,10 +600,12 @@ def get_build_from_match_id(region, match_id, user_id):
             for event in events:
                 if event['eventType'] == 'ITEM_PURCHASED' and event['participantId'] == participant_id:
                     item_set.add_item(event['itemId'], event['timestamp'])
-                if event['eventType'] == 'ITEM_UNDO' and event['participantId'] == participant_id:
+                    print event
+                elif event['eventType'] == 'ITEM_UNDO' and event['participantId'] == participant_id:
+                    print event
                     # if the user undid a sell, then we should not undo the purchase
                     if event['itemBefore'] != 0:
-                        item_set.undo_purchase()
+                        item_set.undo_purchase(event['itemBefore'])
         except KeyError:
             pass
 
