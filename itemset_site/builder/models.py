@@ -466,6 +466,7 @@ class Summoner(object):
                 pass
 
         final_items_count = 0
+        has_boots = False
 
         print final_items_ordered
         for item in final_items_ordered:
@@ -474,6 +475,14 @@ class Summoner(object):
             try:
                 # make sure the item is at least tier 2 (do not show core components in outside their block)
                 assert item_data['data'][item[0]]['from']
+
+                # only put one pair of boots into final build
+                if 'Boots' in item_data['data'][item[0]]['tags']:
+                    if has_boots:
+                        continue
+                    else:
+                        has_boots = True
+
                 # make sure the item is not a trinket first
                 if 'Trinket' not in item_data['data'][item[0]]['tags']:
                     add_item = True
