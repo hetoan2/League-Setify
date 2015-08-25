@@ -467,6 +467,8 @@ class Summoner(object):
 
         final_items_count = 0
         has_boots = False
+        has_jungle_item = False
+        has_gold_item = False
 
         print final_items_ordered
         for item in final_items_ordered:
@@ -482,6 +484,20 @@ class Summoner(object):
                         continue
                     else:
                         has_boots = True
+
+                # only put one jungle item into final build
+                if 'Jungle' in item_data['data'][item[0]]['tags']:
+                    if has_jungle_item:
+                        continue
+                    else:
+                        has_jungle_item = True
+
+                # only put one gold item into final build
+                if 'GoldPer' in item_data['data'][item[0]]['tags']:
+                    if has_gold_item:
+                        continue
+                    else:
+                        has_gold_item = True
 
                 # make sure the item is not a trinket first
                 if 'Trinket' not in item_data['data'][item[0]]['tags']:
