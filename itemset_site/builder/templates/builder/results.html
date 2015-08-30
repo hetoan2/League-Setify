@@ -13,10 +13,634 @@
 <div class="container-fluid" style="margin-bottom: -20px;">
     <img class="champ" src="http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/champion/{{ champion }}.png">
     <h1 style="display: inline; padding-top: -32px; position: absolute; top: 105px; margin-left: 20px;">{{ champion }}</h1>
+    {% if runes_masteries %}
+    <div class="runes_masteries" style="float: right;"><div class="btn-group" role="group" aria-label="..." style="position: relative; top: 20px; right: 30px; margin-bottom: -30px;">
+        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#runesModal">Runes</button>
+        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#masteriesModal">Masteries</button>
+    </div></div>
+    {% endif %}
 </div>
 {% endif %}
 <div class="container-fluid">
-<!-- Modal -->
+
+{% if runes_masteries %}
+<!-- Runes Modal -->
+<div class="modal fade" id="runesModal" tabindex="-1" role="dialog" aria-labelledby="runesLabel">
+  <div class="modal-dialog" role="document" style="margin: 100px auto;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="runesLabel">Runes</h4>
+      </div>
+      <div class="modal-body" id="runes">
+        <div class="container-fluid">
+        {% for rune in runes_masteries.0 %}
+	<div class="rune-row">
+        <img class="rune-image" id="{{ rune.runeId }}"> {{ rune.rank }}&times;
+        <div class="rune-description" id="{{ rune.runeId }}"></div>
+        </div>
+	{% endfor %}
+        </div>
+        <script>
+        $.getJSON("http://ddragon.leagueoflegends.com/cdn/{{ version }}/data/en_US/rune.json", function(data) {
+            $('#runes').find("img.rune-image").each(function() {
+                var item_id = this.id;
+                $(this).attr("src", "http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/rune/"+data.data[item_id].image.full);
+                });
+            $('#runes').find("div.rune-description").each(function() {
+                var item_id = this.id;
+                $(this).html("<ul class='description'><li><a style='font-weight: bold; text-decoration: none;'>"+ data.data[item_id].name + "</a></li><li>" + data.data[item_id].description + "</li></ul>");
+                });
+        });
+        </script>
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Masteries Modal -->
+<div class="modal fade" id="masteriesModal" tabindex="-1" role="dialog" aria-labelledby="masteriesLabel">
+  <div class="modal-dialog" role="document" style="width: 822px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="masteriesLabel">Masteries</h4>
+      </div>
+      <div class="modal-body">
+        <!-- Masteries will be coming soon! -->
+        
+<div class="trees">
+  <div style="background-image: url(/static/img/mastery-tree-1.jpg);">
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4111">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4112">
+
+          </div>
+          <div class="mastery_rank">0/4</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4113">
+
+          </div>
+          <div class="mastery_rank">0/4</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4114">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4121">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4122">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4123">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4124">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4131">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4132">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4133">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4134">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4141">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4142">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4143">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4144">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4151">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4152">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4154">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4162">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+  <div style="background-image: url(/static/img/mastery-tree-2.jpg);">
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4211">
+
+          </div>
+          <div class="mastery_rank">0/2</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4212">
+
+          </div>
+          <div class="mastery_rank">0/2</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4213">
+
+          </div>
+          <div class="mastery_rank">0/2</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4214">
+
+          </div>
+          <div class="mastery_rank">0/2</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4221">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4222">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4224">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4231">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4232">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4233">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4234">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4241">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4242">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4243">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4244">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4251">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4252">
+
+          </div>
+          <div class="mastery_rank">0/4</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4253">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4262">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+  <div style="background-image: url(/static/img/mastery-tree-3.jpg);">
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4311">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4312">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4313">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4314">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4322">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4323">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4324">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4331">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4332">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4333">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4334">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4341">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4342">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4343">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4344">
+
+          </div>
+          <div class="mastery_rank">0/2</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4352">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4353">
+
+          </div>
+          <div class="mastery_rank">0/3</div>
+        </div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div class="no_rank">
+          <div class="mastery_icon" id="4362">
+
+          </div>
+          <div class="mastery_rank">0/1</div>
+        </div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+      <div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+    <script>
+        $(".mastery_icon").each(function() {
+            $(this).css("background", "url(http://ddragon.leagueoflegends.com/cdn/{{ version }}/img/mastery/"+this.id+".png)");
+        });
+        // procedurally generated code from django template to style masteries
+        {% for mastery in runes_masteries.1 %}
+        var p_mastery = $("div.mastery_icon#{{ mastery.masteryId }}").parent();
+        p_mastery.removeClass("no_rank");
+        var out_of = p_mastery.find(".mastery_rank").html().substring(1,3);
+        if ('{{ mastery.rank }}' == out_of.substring(1,2))
+            p_mastery.addClass("max_rank");
+        p_mastery.find(".mastery_rank").html("{{ mastery.rank }}"+out_of);
+        {% endfor %}
+    </script>
+  </div>
+</div>
+{% endif %}
+
+<!-- Generator Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document" style="margin: 100px auto;">
     <div class="modal-content">

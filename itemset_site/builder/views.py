@@ -18,8 +18,8 @@ def index(request):
 @cache_page(60 * 60 * 8)
 def game_builder(request, region, game_id, user_id):
     try:
-        itemset = get_build_from_match_id(region, game_id, user_id)
-        context = {'itemset': itemset, 'version': dd_version, 'champion': itemset.champion}
+        itemset, runes_masteries = get_build_from_match_id(region, game_id, user_id)
+        context = {'itemset': itemset, 'version': dd_version, 'champion': itemset.champion, 'runes_masteries': runes_masteries}
         return render(request, 'builder/results.html', context)
     except LookupError:
         return render(request, 'builder/error.html')

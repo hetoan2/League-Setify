@@ -556,6 +556,11 @@ def get_timeline_data(region, match_id, user_id):
         if str(participant['player']['summonerId']) == str(user_id):
             participant_id = participant['participantId']
 
+    runes = data['participants'][int(participant_id) - 1]['runes']
+    masteries = data['participants'][int(participant_id) - 1]['masteries']
+
+    runes_masteries = (runes, masteries)
+
     final_build = list()
 
     # participant id is 1 indexed, so subtract 1, getting the participant's stats for final build
@@ -573,7 +578,7 @@ def get_timeline_data(region, match_id, user_id):
 
     participant_info = (participant_id, champion_name, map_id)
 
-    return data['timeline']['frames'], participant_info, final_build
+    return data['timeline']['frames'], participant_info, final_build, runes_masteries
 
 
 def get_name_from_user_id(region, user_id):
@@ -593,7 +598,7 @@ def get_build_from_match_id(region, match_id, user_id):
     :param match_id: Int containing the match ID.
     :return: ItemSet
     """
-    timeline_data, participant_info, final_build = get_timeline_data(region, match_id, user_id)
+    timeline_data, participant_info, final_build, runes_masteries = get_timeline_data(region, match_id, user_id)
 
     # if the timeline is none, there was an error fetching from the server, should display error page
     if timeline_data is None:
@@ -647,7 +652,7 @@ def get_build_from_match_id(region, match_id, user_id):
             final_build_block.add_item(item)
     item_set.add_block(final_build_block)
 
-    return item_set
+    return item_set, runes_masteries
 
 
 def get_summoner_id(username, region="na"):
