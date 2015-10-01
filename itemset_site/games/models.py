@@ -1,5 +1,5 @@
 # from django.db import models
-from django.core.cache import cache
+
 from time import sleep
 import urllib
 import datetime
@@ -7,25 +7,33 @@ import json
 
 api_key = ""
 
-dd_version = cache.get('version')
+try:
+    from django.core.cache import cache
+    dd_version = cache.get('version')
+except:
+    # backup version
+    dd_version = '5.19.1'
 
-# if the version number is not in the cache (expired), fetch data again
-if dd_version is None:
-    valid_lookup = False
-    while not valid_lookup:
-        try:
-            versions = json.load(urllib.urlopen("https://global.api.pvp.net/api/lol/static-data/na/v1.2/versions"
-                                                "?api_key=" + api_key))
 
-            dd_version = versions[0]
+def get_version():
+    global versions, dd_version
+    # if the version number is not in the cache (expired), fetch data again
+    if dd_version is None:
+        valid_lookup = False
+        while not valid_lookup:
+            try:
+                versions = json.load(urllib.urlopen("https://global.api.pvp.net/api/lol/static-data/na/v1.2/versions"
+                                                    "?api_key=" + api_key))
 
-            # cache the versions every 8 hours.
-            cache.set(dd_version, 'version', 60*60*8)
+                dd_version = versions[0]
 
-            valid_lookup = True
-        except:
-            valid_lookup = False
+                # cache the versions every 8 hours.
+                cache.set(dd_version, 'version', 60*60*8)
 
+                valid_lookup = True
+            except:
+                valid_lookup = False
+get_version()
 
 # these 3 calls are to the static data CDN, so we don't have to worry about rate limiting
 champion_data = json.load(urllib.urlopen("http://ddragon.leagueoflegends.com"
@@ -54,8 +62,10 @@ class Summoner(object):
         :param ranked: Boolean on whether to restrict to soloq games or not.
         :return:
         """
+        global versions
+
         query_params = {}
-        url = "https://" + self.region + ".api.pvp.net/api/lol/" + self.region + "/v2.2/matchhistory/" + str(self.id) + "?"
+        url = "https://" + self.region + ".api.pvp.net/api/lol/" + self.region + "/v2.2/matchlist/by-summoner/" + str(self.id) + "?"
 
         if ranked == 1:
             query_params['rankedQueues'] = 'RANKED_SOLO_5x5'
@@ -67,8 +77,10 @@ class Summoner(object):
         # query_params['beginIndex'] = 10
         # query_params['endIndex'] = 100
 
+        champion_id = None
         if champion_name is not None:
             champion_id = get_champion_id(champion_name)
+            print champion_id
             query_params['championIds'] = champion_id
 
         query_params['api_key'] = api_key
@@ -76,40 +88,69 @@ class Summoner(object):
         # add the query parameters to the url
         url += urllib.urlencode(query_params)
 
+        print url
+
         # get the response from the server
         data = fetch_json_from_url(url)
 
+        # print data
+
         try:
             self.matches = list()
+
+            count = 0
             for match in data['matches']:
-                stats = match['participants'][0]['stats']
-                match_data = {"id": match['matchId'],
-                              "champ": get_champion_name(match['participants'][0]['championId']),
+                count += 1
+                if count >= 10:
+                    break
+
+                match_id = match["matchId"]
+                champ_id = match["champion"]
+
+                url = "https://" + self.region + ".api.pvp.net/api/lol/" + self.region + "/v2.2/match/" + str(match_id) + "?api_key=" + api_key
+
+                _match = fetch_json_from_url(url)
+
+                participant = 0
+
+                for p in _match['participantIdentities']:
+                    # print "p:", p
+                    if p['player']['summonerId'] == self.id:
+                        participant = p['participantId'] - 1
+
+                stats = _match['participants'][participant]['stats']
+                # print stats
+                match_data = {"id": _match['matchId'],
+                              "champ": get_champion_name(_match['participants'][participant]['championId']),
                               "score": "%s/%s/%s" % (stats['kills'], stats['deaths'], stats['assists']),
                               "gold": '{:.1f}'.format(float(stats['goldEarned']) / 1000) + "k",
-                              "spell_1": get_summoner_spell_image(match['participants'][0]['spell1Id']),
-                              "spell_2": get_summoner_spell_image(match['participants'][0]['spell2Id']),
+                              "spell_1": get_summoner_spell_image(_match['participants'][participant]['spell1Id']),
+                              "spell_2": get_summoner_spell_image(_match['participants'][participant]['spell2Id']),
                               # for version, replace find second decimal place (replace first decimal with space,
                               # then do find on result to get index of second decimal, strip to base version
                               # finally adding ".1" to end of version number to get the data dragon variant.
-                              "version": match['matchVersion']
-                                         [:match['matchVersion'].replace(".", " ", 1).find(".")] + ".1",
+                              "version": _match['matchVersion']
+                                         [:_match['matchVersion'].replace(".", " ", 1).find(".")] + ".1",
                               "status": stats['winner'],
-                              "date": datetime.datetime.fromtimestamp(match['matchCreation'] // 1000).strftime("%x"),
+                              "date": datetime.datetime.fromtimestamp(_match['matchCreation'] // 1000).strftime("%x"),
                               }
 
-                # validate if version is in version list (some patches don't have .1 as their base version)
-                while match_data["version"] not in versions:
-                    # if it isn't, strip the end off and increment
-                    oldversion = int(match_data["version"][-1:])
-                    match_data["version"] = match_data["version"][:-1]+str(oldversion+1)
-                    # let's not make our server stuck with some anomaly in the data... only iterate this 5 times maximum
-                    if oldversion > 5:
-                        break
+                try:
+                    # validate if version is in version list (some patches don't have .1 as their base version)
+                    while match_data["version"] not in versions:
+                        # if it isn't, strip the end off and increment
+                        oldversion = int(match_data["version"][-1:])
+                        match_data["version"] = match_data["version"][:-1]+str(oldversion+1)
+                        # let's not make our server stuck with some anomaly in the data... only iterate this 5 times maximum
+                        if oldversion > 5:
+                            break
+                except NameError:
+                    get_version()
 
                 item_slots = ['0', '1', '2', '3', '4', '5', '6']
                 for slot in item_slots:
                     if stats['item' + slot] != 0:
+                        # print stats['item'+slot]
                         match_data[slot] = stats['item' + slot]
                 self.matches.append(match_data)
         except KeyError:
@@ -159,7 +200,7 @@ def get_champion_name(champion_id):
             return champ
 
 
-def get_summoner_id(username, region="na"):
+def get_summoner_by_name(username, region="na"):
     """
     Get the summoner from the API using the username.
     :param username: String with username to lookup.
